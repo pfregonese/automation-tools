@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Global variables
+USER_TO_CHECK="username"
+UPTIME_THRESHOLD_DAYS=30
+
+# Function to check if the user is logged in
+is_user_logged_in() {
+    if who | grep -q "^$USER_TO_CHECK\b"; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Function to check if the system uptime is over the threshold
+is_uptime_over_threshold() {
+    local uptime_days; uptime_days=$(awk '{print int($1/86400)}' /proc/uptime)
+    if [[ "$uptime_days" -gt "$UPTIME_THRESHOLD_DAYS" ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Main function
+main() {
+    if is_user_logged_in; then
+        printf "User %s is currently logged in. No action taken.\n" "$USER_TO_CHECK"
+        return 0
+    fi
+
+    if is_uptime_over_threshold; then
+        printf "Uptime is over %d days. Rebooting the system...\n" "$UPTIME_THRESHOLD_DAYS"
+        sudo reboot
+    else
+        printf "Uptime is not over %d days. No action taken.\n" "$UPTIME_THRESHOLD_DAYS"
+    fi
+}
+
+main "$@"

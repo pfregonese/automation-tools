@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Global variables
+BACKUP_SRC="/path/to/source_directory"
+BACKUP_DEST="/path/to/backup_directory"
+LOG_FILE="/path/to/backup.log"
+
+# Function to log messages
+log_message() {
+    local message="$1"
+    printf "%s: %s\n" "$(date '+%Y-%m-%d %H:%M:%S')" "$message" >> "$LOG_FILE"
+}
+
+# Function to perform the backup using rsync
+perform_backup() {
+    local src="$1"
+    local dest="$2"
+
+    if ! rsync -a --delete "$src" "$dest"; then
+        log_message "Backup failed for $src to $dest"
+        return 1
+    fi
+    log_message "Backup successful for $src to $dest"
+}
+
+# Main function
+main() {
+    if [[ ! -d "$BACKUP_SRC" ]]; then
+        log_message "Source directory $BACKUP_SRC does not exist. Exiting."
+        return 1
+    fi
+
+    if [[ ! -d "$BACKUP_DEST" ]]; then
+        mkdir -p "$BACKUP_DEST"
+        if [[ $? -ne 0 ]]; then
+            log_message "Failed to create backup directory $BACKUP_DEST. Exiting."
+            return 1
+        fi
+    fi
+
+    perform_backup "$BACKUP_SRC" "$BACKUP_DEST"
+}
+
+main "$@"
