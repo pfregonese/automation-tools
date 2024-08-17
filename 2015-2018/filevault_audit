@@ -1,0 +1,29 @@
+#!/bin/bash
+# Script to check if FileVault is enabled and output its status
+
+# Function to check FileVault status
+check_filevault_status() {
+    local status
+    status=$(fdesetup status)
+
+    if [[ $? -ne 0 ]]; then
+        printf "Error: Unable to retrieve FileVault status.\n" >&2
+        return 1
+    fi
+
+    if [[ "$status" =~ "FileVault is On" ]]; then
+        printf "FileVault is enabled.\n"
+    elif [[ "$status" =~ "FileVault is Off" ]]; then
+        printf "FileVault is disabled.\n"
+    else
+        printf "FileVault status could not be determined.\n"
+    fi
+}
+
+# Main function
+main() {
+    check_filevault_status
+}
+
+# Execute the main function
+main
